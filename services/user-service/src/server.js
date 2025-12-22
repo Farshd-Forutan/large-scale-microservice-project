@@ -21,3 +21,14 @@ app.use("/api/auth", authRoutes);
 app.listen(PORT, () => {
   console.log(`User Service running on port ${PORT}`);
 });
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    service: "user-service",
+    status: "UP",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+const errorMiddleware = require("./middleware/error.middleware");
+app.use(errorMiddleware);
