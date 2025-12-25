@@ -1,4 +1,4 @@
-# 📦 Orders Service
+# 📦 Order Service
 
 > A **modular, scalable, and event-driven Orders microservice** built with Node.js and RabbitMQ.
 
@@ -7,7 +7,7 @@
 ## 🗂️ Service Structure
 
 ```
-orders-service/
+order-service/
 ├── src/
 │   ├── config/
 │   │   ├── index.js
