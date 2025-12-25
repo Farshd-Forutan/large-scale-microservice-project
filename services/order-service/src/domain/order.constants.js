@@ -1,0 +1,8 @@
+module.exports = {
+  ORDER_STATUS: {
+    PENDING: "PENDING",
+    CONFIRMED: "CONFIRMED",
+    CANCELLED: "CANCELLED",
+    SHIPPED: "SHIPPED",
+  },
+};

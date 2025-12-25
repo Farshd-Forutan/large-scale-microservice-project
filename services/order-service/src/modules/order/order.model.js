@@ -11,7 +11,7 @@ const Order = sequelize.define(
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER, // فرض بر Integer بودن ID در سرویس User
+      type: DataTypes.INTEGER, 
       allowNull: false,
     },
     totalAmount: {
