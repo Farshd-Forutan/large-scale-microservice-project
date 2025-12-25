@@ -1,0 +1,78 @@
+version: '3.8'
+
+# ==========================================
+# SHARED INFRASTRUCTURE 
+# ==========================================
+services:
+  # RabbitMQ:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: shared_rabbitmq
+    restart: always
+    ports:
+      - "${RABBITMQ_EXTERNAL_PORT}:5672"   # Service connection port
+      - "15672:15672"                      # Admin Panel
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - microservices-net
+
+  # ==========================================
+  # order-service 
+  # ==========================================
+  
+  # 1. Order Database (PostgreSQL)
+  order_db:
+    image: postgres:15-alpine
+    container_name: order_db_container
+    restart: always
+    environment:
+      POSTGRES_USER: ${ORDER_DB_USER}
+      POSTGRES_PASSWORD: ${ORDER_DB_PASS}
+      POSTGRES_DB: ${ORDER_DB_NAME}
+    ports:
+      - "${ORDER_DB_EXTERNAL_PORT}:5432"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+
+  # 2. Order Service (Node.js)
+  order_service:
+    build: 
+      context: ./services/order-service # <--- آدرس دقیق پوشه سرویس
+      dockerfile: Dockerfile
+    container_name: order_service_container
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - order_db
+    ports:
+      - "3000:3000" # API سفارشات روی پورت 3000
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=3000
+      - DB_HOST=order_db
+      - DB_PORT=5432
+      - DB_NAME=${ORDER_DB_NAME}
+      - DB_USER=${ORDER_DB_USER}
+      - DB_PASSWORD=${ORDER_DB_PASS}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - microservices-net
+
+# ==========================================
+# VOLUMES & NETWORKS
+# ==========================================
+volumes:
+  rabbitmq_data:
+  order_db_data:
+
+
+networks:
+  microservices-net:
+    driver: bridge
