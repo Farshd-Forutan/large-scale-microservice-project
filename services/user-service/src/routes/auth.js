@@ -1,56 +1,66 @@
 const express = require("express");
-const router = express.Router();
-const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const authMiddleware = require("../middleware/auth.middleware");
 
-// Register
+const router = express.Router();
+
+// ================== SIGNUP ==================
 router.post("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const user = new User({ username, email, password });
-    await user.save();
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ error: "User already exists" });
+    }
+
+    await User.create({ username, email, password });
+
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Login
+// ================== LOGIN ==================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     res.json({ token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-module.exports = router;
-
-// Middleware احراز هویت
-const authMiddleware = (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-  if (!token) return res.status(401).json({ error: "No token provided" });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    next();
-  } catch (err) {
-    res.status(401).json({ error: "Invalid token" });
-  }
-};
-
-// مسیر تستی محافظت‌شده
-router.get("/protected", authMiddleware, (req, res) => {
-  res.json({ message: "You accessed a protected route", userId: req.userId });
+// ================== ME (PROTECTED) ==================
+router.get("/me", authMiddleware, async (req, res) => {
+  const user = await User.findById(req.user.userId).select("-password");
+  res.json(user);
 });
+
+module.exports = router;
