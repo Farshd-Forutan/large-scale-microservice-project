@@ -22,6 +22,9 @@ order-service/
 │   │       ├── order.model.js
 │   │       └── order.routes.js
 │   │
+│   ├── middlewares/
+│   │    └── auth.middleware.js
+│   │
 │   ├── messaging/
 │   │   ├── rabbitmq.connection.js
 │   │   ├── order.publisher.js
