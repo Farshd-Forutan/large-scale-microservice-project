@@ -65,13 +65,58 @@ services:
     networks:
       - microservices-net
 
+  # ==========================================
+  # payment-service
+  # ==========================================
+
+  # 1. Payment Database (PostgreSQL)
+  payment_db:
+    image: postgres:15-alpine
+    container_name: payment_db_container
+    restart: always
+    environment:
+      POSTGRES_USER: ${PAYMENT_DB_USER}
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASS}
+      POSTGRES_DB: ${PAYMENT_DB_NAME}
+    ports:
+      - "${PAYMENT_DB_EXTERNAL_PORT}:5432"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+
+  # 2. Payment Service (Node.js)
+  payment_service:
+    build: 
+     context: ./services/payment-service
+     dockerfile: Dockerfile
+    container_name: payment_service_container
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - payment_db
+    ports:
+      - "3001:3000" # Host Port 3001 -> Container Port 3000
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=3000
+      - DB_HOST=payment_db 
+      - DB_PORT=5432
+      - DB_NAME=${PAYMENT_DB_NAME}
+      - DB_USER=${PAYMENT_DB_USER}
+      - DB_PASSWORD=${PAYMENT_DB_PASS}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - microservices-net
+
 # ==========================================
 # VOLUMES & NETWORKS
 # ==========================================
 volumes:
   rabbitmq_data:
   order_db_data:
-
+  payment_db_data:
 
 networks:
   microservices-net:
