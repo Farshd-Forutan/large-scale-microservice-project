@@ -2,13 +2,14 @@ const paymentService = require("./payment.service");
 
 const makePayment = async (req, res) => {
   try {
+    const userEmail = req.user.email;
     const { orderId, amount } = req.body;
 
     if (!orderId || !amount) {
       return res.status(400).json({ success: false, message: "OrderId and Amount are required" });
     }
 
-    const result = await paymentService.processPayment({ orderId, amount });
+    const result = await paymentService.processPayment({ userEmail, orderId, amount });
 
     if (result.status === "FAILED") {
       return res.status(400).json({

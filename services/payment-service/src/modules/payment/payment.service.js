@@ -4,7 +4,7 @@ const { publishPaymentCompleted } = require("../../messaging/payment.publisher")
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const processPayment = async (data) => {
-  const { orderId, amount } = data;
+  const { userEmail, orderId, amount } = data;
 
   // 1. Simulation of Bank Gateway
   await delay(1500);
@@ -25,6 +25,7 @@ const processPayment = async (data) => {
   // 4. Publish Event if success
   if (isSuccess) {
     await publishPaymentCompleted({
+      userEmail,
       orderId,
       status,
       transactionId,
