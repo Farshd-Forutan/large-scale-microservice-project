@@ -1,13 +1,13 @@
-# 📦 Order Service
+# 📦 Payment Service
 
-> A **modular, scalable, and event-driven Orders microservice** built with Node.js and RabbitMQ.
+> A **modular, scalable, and event-driven Payments microservice** built with Node.js and RabbitMQ.
 
 ---
 
 ## 🗂️ Service Structure
 
 ```
-order-service/
+payment-service/
 ├── src/
 │   ├── config/
 │   │   ├── index.js
@@ -15,24 +15,23 @@ order-service/
 │   │   └── rabbitmq.js
 │   │
 │   ├── modules/
-│   │   └── order/
-│   │       ├── order.controller.js
-│   │       ├── order.service.js
-│   │       ├── order.repository.js
-│   │       ├── order.model.js
-│   │       └── order.routes.js
+│   │   └── payment/
+│   │       ├── payment.controller.js
+│   │       ├── payment.service.js
+│   │       ├── payment.repository.js
+│   │       ├── payment.model.js
+│   │       └── payment.routes.js
 │   │
 │   ├── middlewares/
 │   │    └── auth.middleware.js
 │   │
 │   ├── messaging/
 │   │   ├── rabbitmq.connection.js
-│   │   ├── order.publisher.js
-│   │   ├── order.consumer.js
+│   │   ├── payment.publisher.js
 │   │   └── queues.js
 │   │
 │   ├── domain/
-│   │   └── order.constants.js
+│   │   └── payment.constants.js
 │   │
 │   ├── utils/
 │   │   └── apiError.js
@@ -54,26 +53,30 @@ Centralized configuration for external services and environment setup.
 
 | File          | Responsibility              |
 |---------------|-----------------------------|
-| `index.js`    | Loads and aggregates all configs |
+| `index.js`    | Loads and aggregates all configs (Single Source of Truth) |
 | `database.js` | Database connection settings |
 | `rabbitmq.js` | RabbitMQ connection options |
 
 ---
 
-## 🧩 Order Module (`src/modules/order/`)
+## 🧩 Payment Module (`src/modules/payment/`)
 
-A **self-contained feature module** implementing the Order domain.
+A **self-contained feature module** implementing the Payment domain.
 
-| Layer         | File                  |
-|---------------|-----------------------|
-| Controller    | `order.controller.js` |
-| Business Logic| `order.service.js`    |
-| Data Access   | `order.repository.js` |
-| Model         | `order.model.js`      |
-| Routes        | `order.routes.js`     |
+| Layer         | File                    |
+|---------------|-------------------------|
+| Controller    | `payment.controller.js` |
+| Business Logic| `payment.service.js`    |
+| Data Access   | `payment.repository.js` |
+| Model         | `payment.model.js`      |
+| Routes        | `payment.routes.js`     |
 
-✅ Keeps order-related logic **isolated and testable**  
+✅ Keeps payment-related logic **isolated and testable**  
 ✅ Easy to extend without affecting other modules
+
+### Payment Logic in `payment.service.js`
+This file handles the core business logic for processing payments. It simulates interaction with a bank gateway using a 1.5-second delay, applies a 90% success rate (randomly determining 'SUCCESS' or 'FAILED' status), generates a unique transaction ID, saves the payment record via the repository, and publishes a 'payment completed' event only on success for integration with other services (e.g., order updates). 
+The exported `processPayment` function takes order ID and amount as input and returns the created payment record.
 
 ---
 
@@ -84,8 +87,7 @@ Handles **event-driven communication** using RabbitMQ.
 | File                    | Description                     |
 |-------------------------|---------------------------------|
 | `rabbitmq.connection.js`| Manages connection lifecycle   |
-| `order.publisher.js`    | Publishes order events          |
-| `order.consumer.js`     | Consumes order events           |
+| `payment.publisher.js`  | Publishes payment events        |
 | `queues.js`             | Centralized queue & exchange definitions |
 
 This allows the service to remain **loosely coupled** from other services.
@@ -96,10 +98,8 @@ This allows the service to remain **loosely coupled** from other services.
 
 Contains **pure domain knowledge** with no infrastructure dependencies.
 
-- `order.constants.js`
-  - Order statuses
-  - Event names
-  - Domain-level rules
+- `payment.constants.js`
+  - Payment statuses (PENDING, SUCCESS, FAILED)
 
 ---
 
@@ -124,7 +124,6 @@ Reusable helpers shared across the service.
 
 | File           | Description              |
 |----------------|--------------------------|
-| `.env`         | Environment variables    |
 | `Dockerfile`   | Container configuration  |
 | `package.json` | Dependencies & scripts   |
 

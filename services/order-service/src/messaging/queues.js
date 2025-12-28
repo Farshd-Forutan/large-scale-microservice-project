@@ -1,0 +1,6 @@
+module.exports = {
+  QUEUES: {
+    ORDER_CREATED: "ORDER_CREATED", 
+    PAYMENT_COMPLETED: "PAYMENT_COMPLETED", 
+  },
+};
