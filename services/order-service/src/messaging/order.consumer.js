@@ -1,31 +1,53 @@
+// order-service/consumer.js
 const { getChannel } = require("./rabbitmq.connection");
-const { QUEUES } = require("./queues");
+const { EXCHANGES, QUEUES } = require("./rabbitmq.constants");
 const orderRepository = require("../modules/order/order.repository");
 const { ORDER_STATUS } = require("../domain/order.constants");
 
 const consumePaymentUpdates = async () => {
   try {
     const channel = getChannel();
-    const queue = QUEUES.PAYMENT_COMPLETED;
 
-    await channel.assertQueue(queue, { durable: true });
-    console.log(`🎧 Waiting for messages in ${queue}...`);
+    // 1. تعریف DLQ (Dead Letter Exchange/Queue)
+    // اگر پیامی پردازش نشد، به اینجا می‌رود تا بعدا بررسی شود
+    const dlxName = "DLX_EXCHANGE";
+    await channel.assertExchange(dlxName, "fanout", { durable: true });
+    await channel.assertQueue(QUEUES.DEAD_LETTER, { durable: true });
+    await channel.bindQueue(QUEUES.DEAD_LETTER, dlxName, "");
 
-    channel.consume(queue, async (msg) => {
+    // 2. تعریف صف اصلی با تنظیمات DLQ
+    // اگر پیامی Nack شود یا Rejection بخورد، به DLX می‌رود
+    await channel.assertQueue(QUEUES.ORDER_PAYMENT_UPDATE, {
+      durable: true,
+      arguments: {
+        "x-dead-letter-exchange": dlxName, // اگر شکست خورد بفرست اینجا
+      },
+    });
+
+    // 3. اتصال صف به اکسچنجِ پرداخت
+    // ما فقط به آپدیت‌های پرداخت نیاز داریم
+    await channel.assertExchange(EXCHANGES.PAYMENT, "fanout", { durable: true });
+    await channel.bindQueue(QUEUES.ORDER_PAYMENT_UPDATE, EXCHANGES.PAYMENT, "");
+
+    console.log(`🎧 Order Service listening on ${QUEUES.ORDER_PAYMENT_UPDATE}...`);
+
+    channel.consume(QUEUES.ORDER_PAYMENT_UPDATE, async (msg) => {
       if (msg !== null) {
-        const content = JSON.parse(msg.content.toString());
-        console.log(`📨 Received Payment Update for Order: ${content.orderId}`);
-        console.log("Message Content:", content); 
+        try {
+          const content = JSON.parse(msg.content.toString());
+          console.log(`📨 Received Payment Update:`, content);
 
-        const isPaymentSuccessful = content.status === "SUCCESS";
+          const status = content.status === "SUCCESS" ? ORDER_STATUS.CONFIRMED : ORDER_STATUS.CANCELLED;
 
-        const status = isPaymentSuccessful ? ORDER_STATUS.CONFIRMED : ORDER_STATUS.CANCELLED;
+          await orderRepository.updateStatus(content.orderId, status);
+          console.log(`✅ Order ${content.orderId} updated to ${status}`);
 
-        console.log(`Result: Payment was ${isPaymentSuccessful}, setting order to ${status}`);
-
-        await orderRepository.updateStatus(content.orderId, status);
-
-        channel.ack(msg);
+          channel.ack(msg); // تایید موفقیت
+        } catch (err) {
+          console.error("❌ Error processing message:", err);
+          // اگر خطا قابل جبران نیست (مثل خطای دیتابیس)، پیام را به DLQ بفرست (Nack بدون requeue)
+          channel.nack(msg, false, false);
+        }
       }
     });
   } catch (error) {
