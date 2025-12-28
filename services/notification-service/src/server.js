@@ -1,5 +1,5 @@
 const { connectRabbitMQ } = require("./messaging/rabbitmq.connection");
-const { startConsumer } = require("./messaging/notification.consumer");
+const { startNotificationConsumer } = require("./messaging/notification.consumer");
 const logger = require("./utils/logger");
 
 const start = async () => {
@@ -7,7 +7,7 @@ const start = async () => {
     logger.info("🚀 Notification Service is starting...");
 
     await connectRabbitMQ();
-    await startConsumer();
+    await startNotificationConsumer();
 
     logger.info("✅ Notification Service is ready and listening for events.");
   } catch (error) {

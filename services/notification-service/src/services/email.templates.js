@@ -3,10 +3,10 @@ const formatOrderCreatedEmail = (orderData) => {
   const itemsList = orderData.items.map((item) => `<li>محصول: ${item.productId} - تعداد: ${item.quantity} - قیمت: ${item.price}</li>`).join("");
 
   return {
-    subject: `تایید سفارش #${orderData.id}`,
+    subject: `تایید سفارش #${orderData.orderId}`,
     html: `
       <h1>سفارش شما با موفقیت ثبت شد</h1>
-      <p>شماره سفارش: <strong>${orderData.id}</strong></p>
+      <p>شماره سفارش: <strong>${orderData.orderId}</strong></p>
       <p>مبلغ کل: ${orderData.totalAmount}</p>
       <h3>اقلام سفارش:</h3>
       <ul>${itemsList}</ul>

@@ -1,4 +1,3 @@
-version: '3.8'
 
 # ==========================================
 # SHARED INFRASTRUCTURE 
@@ -109,6 +108,41 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     networks:
       - microservices-net
+
+  # ==========================================
+  # notification-service
+  # ==========================================
+
+  # 1. MAILHOG
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025" # پورت SMTP
+      - "8025:8025" # پورت وب برای دیدن ایمیل‌ها
+    networks:
+      - microservices-net
+
+  # 2. Notification Service (Node.js) 
+  notification_service:
+    build: ./services/notification-service
+    container_name: notification_service_container
+    restart: on-failure
+    environment:
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      - SMTP_HOST=${SMTP_HOST}   # نام سرویس داکر
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      mailhog:
+        condition: service_started
+    networks:
+      - microservices-net
+
 
 # ==========================================
 # VOLUMES & NETWORKS
