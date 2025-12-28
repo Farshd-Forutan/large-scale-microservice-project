@@ -5,7 +5,7 @@ const { ORDER_STATUS } = require("../../domain/order.constants");
 
 class OrderService {
   async createOrder(data) {
-    const { userId, items, totalAmount } = data;
+    const { userEmail, userId, items, totalAmount } = data;
 
     
     const newOrder = await orderRepository.create({
@@ -19,6 +19,7 @@ class OrderService {
     await publishOrderCreated({
       orderId: newOrder.id,
       userId: newOrder.userId,
+      userEmail: userEmail,
       totalAmount: newOrder.totalAmount,
       items: newOrder.items,
     });
