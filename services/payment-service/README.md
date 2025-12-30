@@ -28,10 +28,9 @@ payment-service/
 │   ├── messaging/
 │   │   ├── rabbitmq.connection.js
 │   │   ├── payment.publisher.js
-│   │   └── queues.js
+│   │   ├── queues.js
+│   │   └── rabbitmq.constants.js
 │   │
-│   ├── domain/
-│   │   └── payment.constants.js
 │   │
 │   ├── utils/
 │   │   └── apiError.js
@@ -56,6 +55,7 @@ Centralized configuration for external services and environment setup.
 | `index.js`    | Loads and aggregates all configs (Single Source of Truth) |
 | `database.js` | Database connection settings |
 | `rabbitmq.js` | RabbitMQ connection options |
+| `rabbitmq.constants.js` | RabbitMQ Constant (QUEUES,EXCHANGES,etc) |
 
 ---
 
