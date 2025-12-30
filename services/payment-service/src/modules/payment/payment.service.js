@@ -9,8 +9,8 @@ const processPayment = async (data) => {
   // 1. Simulation of Bank Gateway
   await delay(1500);
 
-  // 2. Logic: 90% Success rate
-  const isSuccess = Math.random() > 0.1;
+  // 2. Logic: 50% Success rate
+  const isSuccess = Math.random() > 0.5;
   const status = isSuccess ? "SUCCESS" : "FAILED";
   const transactionId = `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
