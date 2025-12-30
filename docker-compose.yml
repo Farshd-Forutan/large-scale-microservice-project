@@ -41,6 +41,7 @@ services:
 
   # 2. Order Service (Node.js)
   order_service:
+    image: order-service:latest
     build: 
       context: ./services/order-service # <--- آدرس دقیق پوشه سرویس
       dockerfile: Dockerfile
@@ -86,6 +87,7 @@ services:
 
   # 2. Payment Service (Node.js)
   payment_service:
+    image: payment-service:latest
     build: 
      context: ./services/payment-service
      dockerfile: Dockerfile
@@ -125,6 +127,7 @@ services:
 
   # 2. Notification Service (Node.js) 
   notification_service:
+    image: notification-service:latest
     build: ./services/notification-service
     container_name: notification_service_container
     restart: on-failure
