@@ -93,15 +93,6 @@ This allows the service to remain **loosely coupled** from other services.
 
 ---
 
-## 📚 Domain Layer (`src/domain/`)
-
-Contains **pure domain knowledge** with no infrastructure dependencies.
-
-- `payment.constants.js`
-  - Payment statuses (PENDING, SUCCESS, FAILED)
-
----
-
 ## 🛠️ Utilities (`src/utils/`)
 
 Reusable helpers shared across the service.
