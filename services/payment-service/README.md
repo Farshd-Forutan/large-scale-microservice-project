@@ -75,8 +75,7 @@ A **self-contained feature module** implementing the Payment domain.
 ✅ Easy to extend without affecting other modules
 
 ### Payment Logic in `payment.service.js`
-This file handles the core business logic for processing payments. It simulates interaction with a bank gateway using a 1.5-second delay, applies a 90% success rate (randomly determining 'SUCCESS' or 'FAILED' status), generates a unique transaction ID, saves the payment record via the repository, and publishes a 'payment completed' event only on success for integration with other services (e.g., order updates). 
-The exported `processPayment` function takes order ID and amount as input and returns the created payment record.
+This file handles the core business logic for processing payments. It simulates interaction with a bank gateway using a 1.5-second delay, applies a 50% success rate (randomly determining 'SUCCESS' or 'FAILED' status), generates a unique transaction ID, saves the payment record via the repository, and publishes a 'payment completed' or 'payment failed' event for integration with other services (e.g., order-srvice / notification-service).
 
 ---
 
