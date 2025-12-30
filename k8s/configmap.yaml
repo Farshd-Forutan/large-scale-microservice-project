@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: microservices
+data:
+  # General
+  NODE_ENV: "development"
+
+  # Order Service DB
+  ORDER_DB_NAME: "order_service_db"
+
+  # Payment Service DB
+  PAYMENT_DB_NAME: "payment_service_db"
+
+  # Notification / SMTP
+  SMTP_HOST: "mailhog"
+  SMTP_PORT: "1025"
