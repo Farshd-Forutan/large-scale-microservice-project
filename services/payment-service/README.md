@@ -55,7 +55,6 @@ Centralized configuration for external services and environment setup.
 | `index.js`    | Loads and aggregates all configs (Single Source of Truth) |
 | `database.js` | Database connection settings |
 | `rabbitmq.js` | RabbitMQ connection options |
-| `rabbitmq.constants.js` | RabbitMQ Constant (QUEUES,EXCHANGES,etc) |
 
 ---
 
@@ -88,6 +87,7 @@ Handles **event-driven communication** using RabbitMQ.
 | `rabbitmq.connection.js`| Manages connection lifecycle   |
 | `payment.publisher.js`  | Publishes payment events        |
 | `queues.js`             | Centralized queue & exchange definitions |
+| `rabbitmq.constants.js` | RabbitMQ Constants (QUEUES, EXCHANGES, etc) |
 
 This allows the service to remain **loosely coupled** from other services.
 
