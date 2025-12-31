@@ -40,6 +40,19 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// SEARCH Products by Name
+router.get("/search/:query", async (req, res) => {
+  try {
+    const query = req.params.query;
+    const products = await Product.find({
+      name: { $regex: query, $options: "i" }, // جستجو بدون توجه به حروف بزرگ و کوچک
+    });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // UPDATE Product (Protected / Admin)
 router.put("/:id", authMiddleware, async (req, res) => {
   try {

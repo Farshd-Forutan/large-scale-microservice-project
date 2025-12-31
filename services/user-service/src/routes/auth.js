@@ -8,7 +8,7 @@ const router = express.Router();
 // ================== SIGNUP ==================
 router.post("/signup", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
@@ -19,20 +19,34 @@ router.post("/signup", async (req, res) => {
       return res.status(409).json({ error: "User already exists" });
     }
 
-    await User.create({ username, email, password });
+    const allowedRoles = ["user", "admin"];
 
-    res.status(201).json({ message: "User registered successfully" });
+    const user = await User.create({
+      username,
+      email,
+      password,
+      role: allowedRoles.includes(role) ? role : "user",
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      role: user.role,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+
 // ================== LOGIN ==================
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email }, { username }],
+    });
+
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -51,13 +65,14 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ token });
+    res.json({ token, role: user.role });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ================== ME (PROTECTED) ==================
+
+// ================== ME ==================
 router.get("/me", authMiddleware, async (req, res) => {
   const user = await User.findById(req.user.userId).select("-password");
   res.json(user);
