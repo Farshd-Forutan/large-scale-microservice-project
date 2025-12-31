@@ -1,16 +1,16 @@
+version: "3.9"
 
-# ==========================================
-# SHARED INFRASTRUCTURE 
-# ==========================================
 services:
-  # RabbitMQ:
+  # ==========================================
+  # SHARED INFRASTRUCTURE
+  # ==========================================
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: shared_rabbitmq
+    container_name: rabbitmq
     restart: always
     ports:
-      - "${RABBITMQ_EXTERNAL_PORT}:5672"   # Service connection port
-      - "15672:15672"                      # Admin Panel
+      - "${RABBITMQ_EXTERNAL_PORT}:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
@@ -20,72 +20,123 @@ services:
       - microservices-net
 
   # ==========================================
-  # order-service 
+  # USER SERVICE
   # ==========================================
-  
-  # 1. Order Database (PostgreSQL)
+  user_db:
+    image: mongo:7.0
+    container_name: user_mongo
+    restart: always
+    volumes:
+      - user_db_data:/data/db
+    networks:
+      - microservices-net
+
+  user_service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: user_service
+    restart: on-failure
+    depends_on:
+      - user_db
+      - rabbitmq
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      USER_MONGO_URI: mongodb://user_db:27017/userdb
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+    networks:
+      - microservices-net
+
+  # ==========================================
+  # PRODUCT SERVICE
+  # ==========================================
+  product_db:
+    image: mongo:7.0
+    container_name: product_mongo
+    restart: always
+    volumes:
+      - product_db_data:/data/db
+    networks:
+      - microservices-net
+
+  product_service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: product_service
+    restart: on-failure
+    depends_on:
+      - product_db
+      - rabbitmq
+    ports:
+      - "5001:5001"
+    environment:
+      PORT: 5001
+      PRODUCT_MONGO_URI: mongodb://product_db:27017/productdb
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+    networks:
+      - microservices-net
+
+  # ==========================================
+  # ORDER SERVICE
+  # ==========================================
   order_db:
     image: postgres:15-alpine
-    container_name: order_db_container
+    container_name: order_db
     restart: always
     environment:
       POSTGRES_USER: ${ORDER_DB_USER}
       POSTGRES_PASSWORD: ${ORDER_DB_PASS}
       POSTGRES_DB: ${ORDER_DB_NAME}
-    ports:
-      - "${ORDER_DB_EXTERNAL_PORT}:5432"
     volumes:
       - order_db_data:/var/lib/postgresql/data
     networks:
       - microservices-net
 
-  # 2. Order Service (Node.js)
   order_service:
     image: order-service:latest
     build: 
       context: ./services/order-service # <--- آدرس دقیق پوشه سرویس
       dockerfile: Dockerfile
-    container_name: order_service_container
+    container_name: order_service
     restart: on-failure
     depends_on:
-      - rabbitmq
       - order_db
+      - rabbitmq
     ports:
-      - "3000:3000" # API سفارشات روی پورت 3000
+      - "3000:3000"
     environment:
-      - NODE_ENV=${NODE_ENV}
-      - PORT=3000
-      - DB_HOST=order_db
-      - DB_PORT=5432
-      - DB_NAME=${ORDER_DB_NAME}
-      - DB_USER=${ORDER_DB_USER}
-      - DB_PASSWORD=${ORDER_DB_PASS}
-      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
-      - JWT_SECRET=${JWT_SECRET}
+      PORT: 3000
+      DB_HOST: order_db
+      DB_PORT: 5432
+      DB_NAME: ${ORDER_DB_NAME}
+      DB_USER: ${ORDER_DB_USER}
+      DB_PASSWORD: ${ORDER_DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
     networks:
       - microservices-net
 
   # ==========================================
-  # payment-service
+  # PAYMENT SERVICE
   # ==========================================
-
-  # 1. Payment Database (PostgreSQL)
   payment_db:
     image: postgres:15-alpine
-    container_name: payment_db_container
+    container_name: payment_db
     restart: always
     environment:
       POSTGRES_USER: ${PAYMENT_DB_USER}
       POSTGRES_PASSWORD: ${PAYMENT_DB_PASS}
       POSTGRES_DB: ${PAYMENT_DB_NAME}
-    ports:
-      - "${PAYMENT_DB_EXTERNAL_PORT}:5432"
     volumes:
       - payment_db_data:/var/lib/postgresql/data
     networks:
       - microservices-net
 
-  # 2. Payment Service (Node.js)
   payment_service:
     image: payment-service:latest
     build: 
@@ -94,20 +145,19 @@ services:
     container_name: payment_service_container
     restart: on-failure
     depends_on:
-      - rabbitmq
       - payment_db
+      - rabbitmq
     ports:
-      - "3001:3000" # Host Port 3001 -> Container Port 3000
+      - "3001:3000"
     environment:
-      - NODE_ENV=${NODE_ENV}
-      - PORT=3000
-      - DB_HOST=payment_db 
-      - DB_PORT=5432
-      - DB_NAME=${PAYMENT_DB_NAME}
-      - DB_USER=${PAYMENT_DB_USER}
-      - DB_PASSWORD=${PAYMENT_DB_PASS}
-      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
-      - JWT_SECRET=${JWT_SECRET}
+      PORT: 3000
+      DB_HOST: payment_db
+      DB_PORT: 5432
+      DB_NAME: ${PAYMENT_DB_NAME}
+      DB_USER: ${PAYMENT_DB_USER}
+      DB_PASSWORD: ${PAYMENT_DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
     networks:
       - microservices-net
 
@@ -148,10 +198,12 @@ services:
 
 
 # ==========================================
-# VOLUMES & NETWORKS
+# VOLUMES & NETWORK
 # ==========================================
 volumes:
   rabbitmq_data:
+  user_db_data:
+  product_db_data:
   order_db_data:
   payment_db_data:
 
