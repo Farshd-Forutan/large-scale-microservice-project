@@ -9,7 +9,7 @@ const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 router.post("/signup", async (req, res) => {
   try {
     const response = await axios.post(
-      `${USER_SERVICE_URL}/api/auth/signup`,
+      `${USER_SERVICE_URL}/api/v1/auth/signup`,
       req.body
     );
     res.json(response.data);
@@ -24,7 +24,7 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const response = await axios.post(
-      `${USER_SERVICE_URL}/api/auth/login`,
+      `${USER_SERVICE_URL}/api/v1/auth/login`,
       req.body
     );
     res.json(response.data);

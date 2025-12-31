@@ -9,7 +9,7 @@ const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL;
 // GET all products
 router.get("/", async (req, res) => {
   try {
-    const response = await axios.get(`${PRODUCT_SERVICE_URL}/api/products`);
+    const response = await axios.get(`${PRODUCT_SERVICE_URL}/api/v1/products`);
     res.json(response.data);
   } catch (err) {
     res
@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const response = await axios.get(
-      `${PRODUCT_SERVICE_URL}/api/products/${req.params.id}`
+      `${PRODUCT_SERVICE_URL}/api/v1/products/${req.params.id}`
     );
     res.json(response.data);
   } catch (err) {
@@ -36,7 +36,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const response = await axios.post(
-      `${PRODUCT_SERVICE_URL}/api/products`,
+      `${PRODUCT_SERVICE_URL}/api/v1/products`,
       req.body,
       {
         headers: { Authorization: req.headers.authorization },
@@ -54,7 +54,7 @@ router.post("/", authMiddleware, async (req, res) => {
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const response = await axios.put(
-      `${PRODUCT_SERVICE_URL}/api/products/${req.params.id}`,
+      `${PRODUCT_SERVICE_URL}/api/v1/products/${req.params.id}`,
       req.body,
       {
         headers: { Authorization: req.headers.authorization },
@@ -72,7 +72,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const response = await axios.delete(
-      `${PRODUCT_SERVICE_URL}/api/products/${req.params.id}`,
+      `${PRODUCT_SERVICE_URL}/api/v1/products/${req.params.id}`,
       {
         headers: { Authorization: req.headers.authorization },
       }
