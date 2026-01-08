@@ -10,7 +10,7 @@ router.use(authMiddleware);
 router.post("/", async (req, res) => {
   try {
     const response = await axios.post(
-      `${PAYMENT_SERVICE_URL}/api/payments`,
+      `${PAYMENT_SERVICE_URL}/api/v1/payments`,
       req.body,
       { headers: { Authorization: req.headers.authorization } }
     );

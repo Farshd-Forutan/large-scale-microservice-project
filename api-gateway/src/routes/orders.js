@@ -10,7 +10,7 @@ router.use(authMiddleware);
 router.post("/", async (req, res) => {
   try {
     const response = await axios.post(
-      `${ORDER_SERVICE_URL}/api/orders`,
+      `${ORDER_SERVICE_URL}/api/v1/orders`,
       req.body,
       { headers: { Authorization: req.headers.authorization } }
     );
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 router.get("/my-orders", async (req, res) => {
   try {
     const response = await axios.get(
-      `${ORDER_SERVICE_URL}/api/orders/my-orders`,
+      `${ORDER_SERVICE_URL}/api/v1/orders/my-orders`,
       { headers: { Authorization: req.headers.authorization } }
     );
     res.json(response.data);
@@ -35,7 +35,7 @@ router.get("/my-orders", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const response = await axios.get(
-      `${ORDER_SERVICE_URL}/api/orders/${req.params.id}`,
+      `${ORDER_SERVICE_URL}/api/v1/orders/${req.params.id}`,
       { headers: { Authorization: req.headers.authorization } }
     );
     res.json(response.data);
