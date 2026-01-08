@@ -209,6 +209,36 @@ services:
     networks:
       - microservices-net
 
+  # ==========================================
+  # API Gateway
+  # ==========================================
+  api_gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway_container
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=8000
+      - JWT_SECRET=${JWT_SECRET}
+
+      # Service URLs (Docker Network)
+      - USER_SERVICE_URL=http://user_service:4000
+      - PRODUCT_SERVICE_URL=http://product_service:5001
+      - ORDER_SERVICE_URL=http://order_service:3000
+      - PAYMENT_SERVICE_URL=http://payment_service:3001
+
+    depends_on:
+      - user_service
+      - product_service
+      - order_service
+      - payment_service
+
+    networks:
+      - microservices-net
 
 # ==========================================
 # VOLUMES & NETWORK
