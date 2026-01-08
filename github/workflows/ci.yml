@@ -1,0 +1,83 @@
+name: CI Pipeline (Dockerized Microservices)
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  user-service:
+    name: User Service CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build User Service Image
+        run: |
+          docker build \
+            -t user-service:ci \
+            ./services/user-service
+
+  product-service:
+    name: Product Service CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Product Service Image
+        run: |
+          docker build \
+            -t product-service:ci \
+            ./services/product-service
+
+  order-service:
+    name: Order Service CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Order Service Image
+        run: |
+          docker build \
+            -t order-service:ci \
+            ./services/order-service
+
+  payment-service:
+    name: Payment Service CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Payment Service Image
+        run: |
+          docker build \
+            -t payment-service:ci \
+            ./services/payment-service
+
+  api-gateway:
+    name: API Gateway CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build API Gateway Image
+        run: |
+          docker build \
+            -t api-gateway:ci \
+            ./api-gateway
