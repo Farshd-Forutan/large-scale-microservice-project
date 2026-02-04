@@ -33,6 +33,7 @@ services:
       - microservices-net
 
   user_service:
+    image: user-service:latest
     build:
       context: ./services/user-service
       dockerfile: Dockerfile
@@ -64,6 +65,7 @@ services:
       - microservices-net
 
   product_service:
+    image: product-service:latest
     build:
       context: ./services/product-service
       dockerfile: Dockerfile
@@ -152,8 +154,8 @@ services:
   payment_service:
     image: payment-service:latest
     build: 
-     context: ./services/payment-service
-     dockerfile: Dockerfile
+      context: ./services/payment-service
+      dockerfile: Dockerfile
     container_name: payment_service_container
     restart: on-failure
     depends_on:
@@ -213,6 +215,7 @@ services:
   # API Gateway
   # ==========================================
   api_gateway:
+    image: api-gateway:latest
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
