@@ -16,3 +16,9 @@ data:
   # Notification / SMTP
   SMTP_HOST: "mailhog"
   SMTP_PORT: "1025"
+  
+  # API Gateway Service URLs (Internal K8s DNS)
+  USER_SERVICE_URL: "http://user-service:4000"
+  PRODUCT_SERVICE_URL: "http://product-service:5001"
+  ORDER_SERVICE_URL: "http://order-service:3000"
+  PAYMENT_SERVICE_URL: "http://payment-service:3001"
