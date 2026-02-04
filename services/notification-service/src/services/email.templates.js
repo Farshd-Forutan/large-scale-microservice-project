@@ -1,6 +1,6 @@
 const formatOrderCreatedEmail = (orderData) => {
   // orderData باید شامل email کاربر باشد
-  const itemsList = orderData.items.map((item) => `<li>محصول: ${item.productId} - تعداد: ${item.quantity} - قیمت: ${item.price}</li>`).join("");
+  const itemsList = orderData.items.map((item) => `<li>محصول: ${item.name} - تعداد: ${item.quantity} - قیمت: ${item.price}</li>`).join("");
 
   return {
     subject: `تایید سفارش #${orderData.orderId}`,
