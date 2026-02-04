@@ -4,82 +4,44 @@ const authMiddleware = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-// CREATE Product (Protected / Admin)
-router.post("/", authMiddleware, async (req, res) => {
+// ... (کدهای قبلی شما شامل CREATE, GET, SEARCH, UPDATE, DELETE)
+
+/**
+ * @route   PUT /api/products/reduce-stock
+ * @desc    کاهش موجودی کالاها پس از ثبت سفارش (توسط سرویس سفارش)
+ * @access  Protected
+ */
+router.put("/reduce-stock", authMiddleware, async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ error: "Access denied" });
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({ error: "ساختار آیتم‌ها نامعتبر است" });
     }
 
-    const { name, description, price, stock } = req.body;
-    const product = await Product.create({ name, description, price, stock });
-    res.status(201).json(product);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+    // بررسی اینکه آیا تمام محصولات موجودی کافی دارند یا خیر (اختیاری اما توصیه شده)
+    for (const item of items) {
+      const product = await Product.findById(item.productid);
+      if (!product) {
+        return res.status(404).json({ error: `محصول با آی‌دی ${item.productid} یافت نشد` });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ error: `موجودی محصول "${product.name}" کافی نیست` });
+      }
+    }
 
-// GET all Products
-router.get("/", async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET Product by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
-    res.json(product);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// SEARCH Products by Name
-router.get("/search/:query", async (req, res) => {
-  try {
-    const query = req.params.query;
-    const products = await Product.find({
-      name: { $regex: query, $options: "i" }, // جستجو بدون توجه به حروف بزرگ و کوچک
+    // عملیات کاهش موجودی برای تک تک آیتم‌ها
+    const updatePromises = items.map((item) => {
+      return Product.findByIdAndUpdate(
+        item.productid,
+        { $inc: { stock: -item.quantity } }, // مقدار درخواستی را از موجودی کم می‌کند
+        { new: true }
+      );
     });
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
-// UPDATE Product (Protected / Admin)
-router.put("/:id", authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ error: "Access denied" });
-    }
+    await Promise.all(updatePromises);
 
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!product) return res.status(404).json({ error: "Product not found" });
-    res.json(product);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE Product (Protected / Admin)
-router.delete("/:id", authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ error: "Access denied" });
-    }
-
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
-    res.json({ message: "Product deleted successfully" });
+    res.json({ message: "موجودی محصولات با موفقیت بروزرسانی شد" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
