@@ -28,16 +28,25 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-// MongoDB connection
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log("Product Service: MongoDB connected");
-    app.listen(PORT, () =>
-      console.log(`Product Service running on port ${PORT}`)
-    );
-  })
-  .catch((err) => {
-    console.error("MongoDB connection error:", err);
-    process.exit(1);
-  });
+// MongoDB connection and retry logic
+const connectWithRetry = () => {
+  console.log("Attempting to connect to MongoDB...");
+  
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => {
+      console.log("✅ Product Service: MongoDB connected");
+      app.listen(PORT, () =>
+        console.log(`🚀 Product Service running on port ${PORT}`)
+      );
+    })
+    .catch((err) => {
+      console.error("❌ MongoDB connection error:", err.message);
+      console.log("🔄 Retrying in 5 seconds...");
+      // به جای بستن برنامه، ۵ ثانیه صبر کرده و دوباره تلاش می‌کند
+      setTimeout(connectWithRetry, 5000);
+    });
+};
+
+// شروع فرآیند اتصال
+connectWithRetry();
