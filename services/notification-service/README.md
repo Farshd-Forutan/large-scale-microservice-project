@@ -4,7 +4,7 @@
 
 ---
 
-## 🧱 Project Structure
+## 🗂️ Service Structure
 
 High-level overview of the service structure:
 
