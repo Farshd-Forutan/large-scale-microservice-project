@@ -43,6 +43,7 @@ A high-level view of the directory and service layout:
 │     ├── user-service
 │     ├── product-service
 │     ├── order-service
+|     ├── payment-service
 │     └── notification-service
 │     
 ├── docker-compose.yml
