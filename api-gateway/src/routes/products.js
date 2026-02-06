@@ -17,6 +17,19 @@ router.get("/", async (req, res) => {
       .json(err.response?.data || { error: "Product service error" });
   }
 });
+// SEARCH products by name
+router.get("/search/:query", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${PRODUCT_SERVICE_URL}/api/v1/products/search/${req.params.query}`
+    );
+    res.json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 500)
+      .json(err.response?.data || { error: "Product service error" });
+  }
+});
 
 // GET product by id
 router.get("/:id", async (req, res) => {
